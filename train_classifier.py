@@ -28,9 +28,9 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 
-def load_data(database_filepath,table_name='DisasterRespdata'):
+def load_data(database_filepath, model_name='DisasterRespdata.db'):
     engine = create_engine(database_filepath)
-    df = pd.read_sql_table(table_name,engine)
+    df = pd.read_sql_table(model_name,engine)
     print(df.head())
     X = df['message']
     Y = df[df.columns[4:-1]]
@@ -113,7 +113,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     return results
 
 
-def save_model(model, model_filepath="classifier.pkl"):
+def save_model(model):
     outfile=open(model_filepath,'wb')
     pickle.dump( model,outfile  )
     outfile.close()
