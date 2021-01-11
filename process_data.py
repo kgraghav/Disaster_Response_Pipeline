@@ -1,6 +1,8 @@
 import sys
 import numpy as np
+import pandas as pd
 from sqlalchemy import create_engine
+
 
 
 def load_data(messages_filepath, categories_filepath):
@@ -27,6 +29,7 @@ def clean_data(df,categories):
     df[categories.columns]=categories
     # drop duplicates
     df.drop_duplicates(inplace=True)
+    return df
 
 def save_data(df, database_filename):
     engine = create_engine('sqlite:///{}.db'.format(database_filename))
