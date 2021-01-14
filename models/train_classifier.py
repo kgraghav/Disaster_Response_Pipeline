@@ -27,14 +27,18 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+import matplotlib.pyplot as plt
 
-def load_data(database_filepath, model_name='DisasterRespdata.db'):
-    engine = create_engine(database_filepath)
-    df = pd.read_sql_table(model_name,engine)
+
+def load_data(database_filepath):
+    engine = create_engine('sqlite:///{}.db'.format(database_filepath))
+    df = pd.read_sql_table("data/DisasterResponse.db",engine)
+    df.dropna(inplace=True)
     print(df.head())
     X = df['message']
     Y = df[df.columns[4:-1]]
-    return X,Y
+    category_names=df.columns[4:-1]
+    return X,Y,category_names
 
 def tokenize(text):
     stop_words = stopwords.words("english")
@@ -82,6 +86,7 @@ def build_model():
         ('vect', TfidfVectorizer(tokenizer=tokenize)),
         ('clf', MultiOutputClassifier(RandomForestClassifier())),
     ])
+    return pipeline
 
 def display_results(y_test, y_pred):
     results=pd.DataFrame(columns=y_test.columns,index=['confusion_mat','precision','recall','f-score'])
