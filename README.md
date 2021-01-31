@@ -44,22 +44,23 @@ to be able to identify similar high priority messages in future, which could hel
 ## File Descriptions <a name="files"></a>
 
 The folder structure: <br>
--workspace
-    - template
-    | |- master.html  # main page of web app
-    | |- go.html  # classification result page of web app
-    
-    - data
-    |- disaster_categories.csv  # categories data to process 
-    |- disaster_messages.csv  # messages data to process
-    |- process_data.py # python ETL Pipeline
-    |- DisasterResponse.db.db   # database to save clean data to
 
-    - models
-    |- train_classifier.py
-    |- classifier.pkl  # saved model 
-    
-    - run.py  # Flask file that runs app
+    -workspace
+        - template
+        | |- master.html  # main page of web app
+        | |- go.html  # classification result page of web app
+
+        - data
+        |- disaster_categories.csv  # categories data to process 
+        |- disaster_messages.csv  # messages data to process
+        |- process_data.py # python ETL Pipeline
+        |- DisasterResponse.db.db   # database to save clean data to
+
+        - models
+        |- train_classifier.py
+        |- classifier.pkl  # saved model 
+
+        - run.py  # Flask file that runs app
     
  - ETL Pipeline Preparation.ipynb: ETL Pipeline notebook
  - ML Pipeline Preparation.ipynb: ML Pipelie notebook
