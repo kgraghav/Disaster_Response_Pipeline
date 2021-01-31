@@ -70,8 +70,8 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
             pos_tags = nltk.pos_tag(tokenize(sentence))
             first_word, first_tag = pos_tags[0]
             if first_tag in ['VB', 'VBP'] or first_word == 'RT':
-                return True
-        return False
+                return 1
+        return 0
 
     def fit(self, x, y=None):
         return self
@@ -83,10 +83,23 @@ class StartingVerbExtractor(BaseEstimator, TransformerMixin):
 
 def build_model():
     pipeline = Pipeline([
-        ('vect', TfidfVectorizer(tokenizer=tokenize)),
-        ('clf', MultiOutputClassifier(RandomForestClassifier())),
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('vect', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf', TfidfTransformer())
+            ])),
+
+            ('starting_verb', StartingVerbExtractor())
+        ])),
+
+        ('clf',RandomForestClassifier())
     ])
-    return pipeline
+    parameters = {
+        'clf__n_estimators': [50, 200],
+        'clf__min_samples_split': [2, 4]}
+    cv = GridSearchCV(pipeline, param_grid=parameters,n_jobs=4,verbose=2)
+    return cv
 
 def display_results(y_test, y_pred):
     results=pd.DataFrame(columns=y_test.columns,index=['confusion_mat','precision','recall','f-score'])
@@ -97,8 +110,8 @@ def display_results(y_test, y_pred):
         results.loc['recall',column]=precision_recall_fscore_support(y_test.loc[:,column] ,y_pred[:,i],average='micro')[1]
         results.loc['f-score',column]=precision_recall_fscore_support(y_test.loc[:,column] ,y_pred[:,i],average='micro')[2]
         i=i+1
-    fig=plt.figure(figsize=(12,8))
-    plt.barh(y_test.columns,results.loc['f-score',:])
+    #fig=plt.figure(figsize=(12,8))
+    #plt.barh(y_test.columns,results.loc['f-score',:])
     mean_accuracy_score=results.loc['f-score',:].mean()
     std_accuracy_score=results.loc['f-score',:].std()
     accuracy_sorted=list(results.loc['f-score',:].sort_values(ascending=True))
@@ -118,7 +131,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     return results
 
 
-def save_model(model):
+def save_model(model,model_filepath):
     outfile=open(model_filepath,'wb')
     pickle.dump( model,outfile  )
     outfile.close()
@@ -129,9 +142,9 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
+        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2,random_state=42)
         
-        print('Building model...')
+        print('  model...')
         model = build_model()
         
         print('Training model...')
@@ -141,7 +154,7 @@ def main():
         evaluate_model(model, X_test, Y_test, category_names)
 
         print('Saving model...\n    MODEL: {}'.format(model_filepath))
-        save_model(model, model_filepath)
+        save_model(model,model_filepath)
 
         print('Trained model saved!')
 
